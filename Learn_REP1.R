@@ -78,17 +78,15 @@ corF=numeric(6)
 for(i in 1:6){
   corF[i]=cor(mpg,auto[,i])
 }
-cor(auto[,-1])
+Wcor=cor(auto[,-1])
 
 #Qunatile curve
 qF=quantile(mpg,seq(0, 1, 0.01))
 plot(qF,type="l",xlab="Q%",ylab="mpg")
 
 #Sorting by qunatile
-q33=max(qF[0:34])
-q66=min(qF[67:101])
-LOWmpg=as.matrix(auto[mpg<=q33,])
-HIGHmpg=as.matrix(auto[mpg>q66,])
+LOWmpg=as.matrix(auto[mpg<=max(qF[0:34]),])
+HIGHmpg=as.matrix(auto[mpg>min(qF[67:101]),])
 
 #Histograms of features for post-sort
 for(i in 2:6){
@@ -109,18 +107,46 @@ thrF=(mL*stdH+mH*stdL)/(stdH+stdL)
 fscore=apply(scoreCalc(AUTO[,-1]),1,sum)
 
 #train/test split
-train=filter(auto,!between(mpg,q33,q66))
-test=filter(auto,between(mpg,q33,q66))
+train=filter(auto,!between(mpg,max(qF[0:34]),min(qF[67:101])))
+test=filter(auto,between(mpg,max(qF[0:34]),min(qF[67:101])))
 
-#True classification
+#True classification 
 Rclass_true=trueclass(median(mpg),as.matrix(train[,1]))
 Eclass_true=trueclass(median(mpg),as.matrix(test[,1]))
 
-#Predicted classification
-Rclass_pred=classifier(1,apply(scoreCalc(train[,-1]),1,sum))
-Eclass_pred=classifier(1,apply(scoreCalc(test[,-1]),1,sum))
+#Predicted classification train(R)/test(E)
+Rclass_pred1=classifier(1,apply(scoreCalc(train[,-1]),1,sum))
+Rclass_pred2=classifier(2,apply(scoreCalc(train[,-1]),1,sum))
+Rclass_pred3=classifier(3,apply(scoreCalc(train[,-1]),1,sum))
 
-#Confusion martix
-Ctrain=table(Rclass_pred,Rclass_true)
-Ctest=table(Eclass_pred,Eclass_true)
+Eclass_pred1=classifier(1,apply(scoreCalc(test[,-1]),1,sum))
+Eclass_pred2=classifier(2,apply(scoreCalc(test[,-1]),1,sum))
+Eclass_pred3=classifier(3,apply(scoreCalc(test[,-1]),1,sum))
 
+#Confusion martix train(R)/test(E)
+Ctrain1=table(Rclass_pred1,Rclass_true)
+Ctrain2=table(Rclass_pred2,Rclass_true)
+Ctrain3=table(Rclass_pred3,Rclass_true)
+
+Ctest1=table(Eclass_pred1,Eclass_true)
+Ctest2=table(Eclass_pred2,Eclass_true)
+Ctest3=table(Eclass_pred3,Eclass_true)
+
+#Results
+Fbar
+sdF
+corF
+Wcor
+mL
+mH
+stdL
+stdH
+s
+discr
+thrF
+Ctrain1
+Ctrain2
+Ctrain3
+Ctest1
+Ctest2
+Ctest3
