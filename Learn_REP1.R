@@ -61,16 +61,19 @@ Fbar=apply(auto, 2, mean)
 sdF=apply(auto, 2, sd)
 
 #Feature Histogram and related pdf with same mean/sd
+par(mfrow=c(1,2))
 for(i in 1:6){
 hist(AUTO[,i],main=paste("histogram of", names(auto)[i]),xlab=names(auto)[i])
 seq=seq(-100,100,by=0.1)
 pdf=dnorm(seq,Fbar[i],sdF[i])
 plot(seq,pdf,main=paste("normal w/ mean & sd of",names(auto)[i]),xlab="",ylab="")
 }
+par(mfrow=c(1,1))
 
 #Scatter of features
-for(i in 2:6){
-  print(ggplot(auto,aes(AUTO[,i],mpg))+geom_point())
+ggplot(auto,aes(AUTO[,2],mpg))+geom_jitter()+labs(x="cylinders")
+for(i in 3:6){
+  print(ggplot(auto,aes(AUTO[,i],mpg))+geom_point()+labs(x=names(auto)[i]))
 }
 
 #Correlations
@@ -89,10 +92,12 @@ LOWmpg=as.matrix(auto[mpg<=max(qF[0:34]),])
 HIGHmpg=as.matrix(auto[mpg>min(qF[67:101]),])
 
 #Histograms of features for post-sort
+par(mfrow=c(1,2))
 for(i in 2:6){
-  hist(LOWmpg[,i],main=paste("Histogram of",names(auto)[i],"(lowmpg)"),xlab=names(auto)[i])
-  hist(HIGHmpg[,i],main=paste("Histogram of",names(auto)[i],"(highmpg)"),xlab=names(auto)[i])
+  hist(LOWmpg[,i],main=paste("lowmpg"),xlab=names(auto)[i])
+  hist(HIGHmpg[,i],main=paste("highmpg"),xlab=names(auto)[i])
 }
+par(mfrow=c(1,1))
 
 #Calcultion of threshold
 mL=apply(LOWmpg[,-1], 2, mean)
