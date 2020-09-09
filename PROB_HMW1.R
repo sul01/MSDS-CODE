@@ -1,0 +1,79 @@
+library(ggplot2)
+library(lattice)
+library(aplpack)
+library(MASS)
+#P1
+c(seq(0,1,0.1),seq(1,10))
+#P2
+build=function(j){
+  jvector=vector()
+  for (i in 1:j){
+    k=seq(1,i)
+    jvector=c(jvector,k)
+  }
+  return(jvector)
+}
+#P3a
+mad=function(x){
+  n=length(x)
+  xbar=mean(x)
+  xhat=sum(abs(x-xbar))/n
+  return(xhat)
+}
+#P3b
+med=function(x){
+  n=length(x)
+  xbar=median(x)
+  xhat=sum(abs(x-xbar))/n
+  return(xhat)
+}
+#P3c
+library(readr)
+U=as.matrix(read_csv("Documents/R/outliers.txt"))
+mad(U[,1])
+mad(U[2:90,1])
+sd(U[,1])
+sd(U[2:90,1])
+#P4a
+set.seed(1)
+runif(50)
+set.seed(1)
+hist(runif(50))
+#P4b
+uni3=numeric(50)
+for(i in 1:50){
+  sum3=sum(runif(3))
+  uni3[i]=sum3
+}
+hist(uni3)
+uni20=numeric(50)
+for(i in 1:50){
+  sum20=sum(runif(20))
+  uni20[i]=sum20
+}
+hist(uni20)
+#P4c
+set.seed(1)
+hist(rnorm(50))
+#P5a
+pr5=function(x){
+  rat=1/(2+sin(5*pi*x))
+  return(rat)
+}
+x=seq(0,1,by=0.001)
+y=pr5(x)
+dit=as.data.frame(cbind(x,y))
+ggplot(dit,aes(x,y))+geom_line()
+#P5b
+integrate(pr5,0,1)
+#P6a
+ggplot(singer,aes(height,voice.part))+geom_jitter()
+ggplot(singer,aes(height,voice.part))+geom_boxplot()
+#P6b
+ggplot(singer,aes(height,voice.part))+geom_violin()
+#P7a
+faces(matrix(rnorm(192),16,12),main="Random Faces")
+#P7b
+pairs(matrix(rnorm(50),10,10),panel=panel.smooth)
+#P8
+ggplot(anorexia,aes(Prewt,Postwt,color=Treat))+geom_point()

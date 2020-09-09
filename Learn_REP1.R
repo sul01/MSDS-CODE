@@ -41,7 +41,7 @@ AUTO=as.matrix(auto)
     c=numeric(length(s))
     for(i in 1:length(s)){
       if(s[i]>=A) c[i]=1
-      else if(s[i]<=-A) c[i]=-1
+      else if(s[i]<A) c[i]=-1
     }
     return (c)
   }
@@ -57,23 +57,63 @@ AUTO=as.matrix(auto)
   
   
 #mean and standard deviation
-Fbar=apply(auto, 2, mean)
-sdF=apply(auto, 2, sd)
+MSD=data.frame(mean=apply(auto, 2, mean),sd=apply(auto, 2, sd))
 
-#Feature Histogram and related pdf with same mean/sd
-par(mfrow=c(1,2))
+
+#Feature Histogram
 for(i in 1:6){
-hist(AUTO[,i],main=paste("histogram of", names(auto)[i]),xlab=names(auto)[i])
-seq=seq(-100,100,by=0.1)
-pdf=dnorm(seq,Fbar[i],sdF[i])
-plot(seq,pdf,main=paste("normal w/ mean & sd of",names(auto)[i]),xlab="",ylab="")
+  x=ggplot(auto,aes(AUTO[,i]))+
+    geom_histogram()+
+    labs(x=names(auto)[i])+
+    theme(text=element_text(size=20),plot.title = element_text(hjust = 0.5))
+  print(x)
 }
-par(mfrow=c(1,1))
+
+#Related pdf with same mean/sd
+n=seq(-10000,10000,0.1)
+norms=data.frame(n=n,
+                 mpg=dnorm(n,MSD[1,1],MSD[1,2]),
+                 cylinders=dnorm(n,MSD[2,1],MSD[2,2]),
+                 displacement=dnorm(n,MSD[3,1],MSD[3,2]),
+                 horsepower=dnorm(n,MSD[4,1],MSD[4,2]),
+                 weight=dnorm(n,MSD[5,1],MSD[5,2]),
+                 acceleration=dnorm(n,MSD[6,1],MSD[6,2]))
+ggplot(norms,aes(n,cylinders))+
+  geom_line()+
+  xlim(-5,15)+
+  labs(title="cylinders",x="",y="")+
+  theme(text=element_text(size=20),plot.title=element_text(hjust=0.5))
+ggplot(norms,aes(n,displacement))+
+  geom_line()+
+  xlim(-150,550)+
+  labs(title="displacement",x="",y="")+
+  theme(text=element_text(size=20),plot.title=element_text(hjust=0.5))
+ggplot(norms,aes(n,horsepower))+
+  geom_line()+
+  xlim(-50,250)+
+  labs(title="horsepower",x="",y="")+
+  theme(text=element_text(size=20),plot.title=element_text(hjust=0.5))
+ggplot(norms,aes(n,weight))+
+  geom_line()+
+  xlim(0,6000)+
+  labs(title="weight",x="",y="")+
+  theme(text=element_text(size=20),plot.title=element_text(hjust=0.5))
+ggplot(norms,aes(n,acceleration))+
+  geom_line()+
+  xlim(5,25)+
+  labs(title="acceleration",x="",y="")+
+  theme(text=element_text(size=20),plot.title=element_text(hjust=0.5))
 
 #Scatter of features
-ggplot(auto,aes(AUTO[,2],mpg))+geom_jitter()+labs(x="cylinders")
+ggplot(auto,aes(AUTO[,2],mpg))+
+  geom_jitter()+
+  labs(x="cylinders")+
+  theme(text=element_text(size=20))
 for(i in 3:6){
-  print(ggplot(auto,aes(AUTO[,i],mpg))+geom_point()+labs(x=names(auto)[i]))
+  x=ggplot(auto,aes(AUTO[,i],mpg))+
+    geom_point()+labs(x=names(auto)[i])+
+    theme(text=element_text(size=20))
+  print(x)
 }
 
 #Correlations
@@ -85,19 +125,28 @@ Wcor=cor(auto[,-1])
 
 #Qunatile curve
 qF=quantile(mpg,seq(0, 1, 0.01))
-plot(qF,type="l",xlab="Q%",ylab="mpg")
+seq1=seq(0,100,1)
+quant=data.frame(seq1,qF)
+names(quant)=c("Q","mpg")
+ggplot(quant,aes(Q,mpg))+geom_step(direction="hv")+
+  labs(x="Q%")+
+  theme(text=element_text(size=20))
 
 #Sorting by qunatile
-LOWmpg=as.matrix(auto[mpg<=max(qF[0:34]),])
-HIGHmpg=as.matrix(auto[mpg>min(qF[67:101]),])
+LOWmpg=auto[mpg<=max(qF[0:34]),]
+HIGHmpg=auto[mpg>min(qF[67:101]),]
 
 #Histograms of features for post-sort
-par(mfrow=c(1,2))
 for(i in 2:6){
-  hist(LOWmpg[,i],main=paste("lowmpg"),xlab=names(auto)[i])
-  hist(HIGHmpg[,i],main=paste("highmpg"),xlab=names(auto)[i])
+  x=ggplot(LOWmpg,aes(as.matrix(LOWmpg)[,i]))+
+    geom_histogram()+labs(title="LOW",x=names(auto)[i])+
+    theme(text=element_text(size=20))
+  y=ggplot(HIGHmpg,aes(as.matrix(HIGHmpg)[,i]))+
+    geom_histogram()+labs(title="HIGH",x=names(auto)[i])+
+    theme(text=element_text(size=20))
+  print(x)
+  print(y)
 }
-par(mfrow=c(1,1))
 
 #Calcultion of threshold
 mL=apply(LOWmpg[,-1], 2, mean)
@@ -150,8 +199,8 @@ s
 discr
 thrF
 Ctrain1
-Ctrain2
-Ctrain3
 Ctest1
+Ctrain2
 Ctest2
+Ctrain3
 Ctest3
