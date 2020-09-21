@@ -1,5 +1,6 @@
 #Libraryies and Data sets
 library(readr)
+library(class)
 VLADIMIR=read_csv("Documents/R/fonts/VLADIMIR.csv")
 EBRIMA=read_csv("Documents/R/fonts/EBRIMA.csv")
 BITSTREAMVERA=read_csv("Documents/R/fonts/BITSTREAMVERA.csv")
