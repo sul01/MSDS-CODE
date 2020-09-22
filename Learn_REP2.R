@@ -58,14 +58,13 @@ trainperf12 = mean(train12 == TRAINSET$font)
 test12 = knn(TRAINSET[,-(1:3)], TESTSET[,-(1:3)], TRAINSET$font, K)
 testperf12 = mean(test12 == TESTSET$font) 
 
-#confusion matrices (used in later parts)
+#confusion matrices
 trainconf12 = table(TRAINSET$font, train12) #confusion matrix
-trainconf12/apply(trainconf, 1, sum) #in percentages
+trainconf12/apply(trainconf12, 1, sum) #in percentages
 testconf12 = table(TESTSET$font, test12)
 testconf12/apply(testconf12, 1, sum)
 
 #(1.2) 
-#takes a while to run
 K = c(5,10,15,20,30,40,50,100)
 testperfK = NULL
 for (i in K){ 
@@ -73,3 +72,49 @@ for (i in K){
   testperfK = c(testperfK, mean(testknn == TESTSET$font))
 }
 plot(K,testperfK, type="l")
+
+#(1.3)
+#lower values of K give better performance, try [a,b] = [1,5]
+K = c(1,2,3,4,5)
+testperfK = NULL
+for (i in K){ 
+  testknn = knn(TRAINSET[,-(1:3)], TESTSET[,-(1:3)], TRAINSET$font, i)
+  testperfK = c(testperfK, mean(testknn == TESTSET$font))
+}
+plot(K,testperfK, type="l") #K=1 gives best performance
+
+#(1.4)
+#training set:
+train1 = knn(TRAINSET[,-(1:3)], TRAINSET[,-(1:3)], TRAINSET$font, 1)
+trainperf1 = mean(train1 == TRAINSET$font)
+#test set:
+test1 = knn(TRAINSET[,-(1:3)], TESTSET[,-(1:3)], TRAINSET$font, 1)
+testperf1 = mean(test1 == TESTSET$font) 
+
+#confusion matrices
+trainconf1 = table(TRAINSET$font, train1) #confusion matrix
+trainconf1/apply(trainconf1, 1, sum) #in percentages
+testconf1 = table(TESTSET$font, test1)
+testconf1/apply(testconf1, 1, sum)
+
+#(1.6)
+PACK1 = NULL
+for(L in 0:9)  for(M in 0:9)  PACK1 = c(PACK1, sprintf('r%ic%i',L,M))
+
+testknnP1 = knn(TRAINSET[,PACK1], TESTSET[,PACK1], TRAINSET$font, 1)
+w1 = mean(testknnP1 == TESTSET$font)
+
+#(1.7)
+PACK2=NULL; PACK3=NULL; PACK4=NULL;
+for(L in 0:9)  for(M in 10:19)  PACK2 = c(PACK2, sprintf('r%ic%i',L,M))
+for(L in 10:19)  for(M in 10:19)  PACK3 = c(PACK3, sprintf('r%ic%i',L,M))
+for(L in 10:19)  for(M in 0:9)  PACK4 = c(PACK4, sprintf('r%ic%i',L,M))
+
+testknnP2 = knn(TRAINSET[,PACK2], TESTSET[,PACK2], TRAINSET$font, 1)
+w2 = mean(testknnP2 == TESTSET$font)
+
+testknnP3 = knn(TRAINSET[,PACK3], TESTSET[,PACK3], TRAINSET$font, 1)
+w3 = mean(testknnP3 == TESTSET$font)
+
+testknnP4 = knn(TRAINSET[,PACK4], TESTSET[,PACK4], TRAINSET$font, 1)
+w4 = mean(testknnP4 == TESTSET$font)
