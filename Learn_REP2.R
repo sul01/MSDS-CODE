@@ -36,8 +36,7 @@ up=upper.tri(CORR)
 out=data.frame(which(up, arr.ind=TRUE), cor=CORR[up])
 out=out[!is.na(out$cor),]
 out=out[order(abs(out$cor), decreasing=TRUE),]
-out$row=rownames(CORR)[out$row]
-out$col=colnames(CORR)[out$col]
+out$row=rownames(CORR)[out$row];out$col=colnames(CORR)[out$col]
 top10Cor=out[1:10,]
 
 #(1.0)
@@ -112,10 +111,19 @@ trainconf101=table(TRAINSET$font,train101)
 testconf101=table(TESTSET$font,test101)
 
 #conf in %'s
-trainconf101/apply(trainconf101,1,sum)
-testconf101/apply(testconf101,1,sum)
+trainconf101=trainconf101/apply(trainconf101,1,sum)
+testconf101=testconf101/apply(testconf101,1,sum)
 
 #(1.5)
+p=as.numeric(diag(testconf101))
+#N*p(N)>4 for all 3 cases, assuming error has approximate normal distribution, 
+sigmaCL1=sqrt(p[1]*(1-p[1])/nrow(testCL1))
+sigmaCL2=sqrt(p[2]*(1-p[2])/nrow(testCL2))
+sigmaCL3=sqrt(p[3]*(1-p[3])/nrow(testCL3))
+#95% confidence interval
+intervalCL1=c(p[1]-sigmaCL1*qnorm(1-0.05/2), p[1]+sigmaCL1*qnorm(1-0.05/2))
+intervalCL2=c(p[2]-sigmaCL1*qnorm(1-0.05/2), p[2]+sigmaCL2*qnorm(1-0.05/2))
+intervalCL3=c(p[3]-sigmaCL1*qnorm(1-0.05/2), p[3]+sigmaCL3*qnorm(1-0.05/2))
 
 #(1.6,1.7) Binning by groups of pixels
 PACK1=NULL;PACK2=NULL;PACK3=NULL;PACK4=NULL;
