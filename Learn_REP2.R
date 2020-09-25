@@ -65,11 +65,11 @@ testperf12=mean(test12==TESTSET$font)
 
 #(1.2) Determine best K by elbow method
 #takes a while to run
-K=c(5,10,15,20,30,40,50,100)
+K=seq(0,100,1)
 testperfK=NULL
-for (i in K){ 
+for (i in 1:max(K)){ 
   testknn=knn(TRAINSET[,-(1:3)],TESTSET[,-(1:3)],TRAINSET$font, i)
-  testperfK=c(testperfK,mean(testknn==TESTSET$font))
+  testperfK=c(testperfK,mean(TESTSET$font==testknn))
 }
 
 Kval=as.data.frame(cbind(K,testperfK))
@@ -77,11 +77,11 @@ Kval=as.data.frame(cbind(K,testperfK))
 #plot 0<=K<=100
 ggplot(Kval,aes(K,testperfK))+
   geom_line()+
-  labs(x="K",y="% Correct classification on TESTSET",title="0<=K<=100")+
-  scale_x_continuous(breaks=round(seq(0,100,by=10),1))
+  labs(x="K",y="% Correct classification on TESTSET",title="0<=K<=10")+
+  scale_x_continuous(breaks=round(seq(0,100,10),1))
 
 #(1.3) Closer inspection around K=100
-K_knee=c(95,96,97,98,99,100,101,102,103,104,105)
+K_knee=c(1,2,3,4,5,6,7,8,9,10)
 testperfK_knee=NULL
 for (i in K_knee){ 
   testknn_knee=knn(TRAINSET[,-(1:3)],TESTSET[,-(1:3)],TRAINSET$font,i)
@@ -90,29 +90,29 @@ for (i in K_knee){
 
 Kval_knee=as.data.frame(cbind(K_knee,testperfK_knee))
 
-#plot around K=101
+#plot around K=1
 ggplot(Kval_knee,aes(K_knee,testperfK_knee))+
   geom_line()+
   labs(x="K",y="% Correct classification on TESTSET",title="Values around K=101")+
-  scale_x_continuous(breaks=round(seq(95,105,by=1),1))
+  scale_x_continuous(breaks=round(K_knee,1))
 
 #(1.4)
-Kbest=101
+Kbest=1
 
 #train/test
-train101=knn(TRAINSET[,-(1:3)],TRAINSET[,-(1:3)],TRAINSET$font,Kbest)
-test101=knn(TRAINSET[,-(1:3)],TESTSET[,-(1:3)],TRAINSET$font,Kbest)
+train1=knn(TRAINSET[,-(1:3)],TRAINSET[,-(1:3)],TRAINSET$font,Kbest)
+test1=knn(TRAINSET[,-(1:3)],TESTSET[,-(1:3)],TRAINSET$font,Kbest)
 
-trainperf101=mean(train101==TRAINSET$font)
-testperf101=mean(test101==TESTSET$font)
+trainperf1=mean(train1==TRAINSET$font)
+testperf1=mean(test1==TESTSET$font)
 
 #confusion matrices 
-trainconf101=table(TRAINSET$font,train101)
-testconf101=table(TESTSET$font,test101)
+trainconf1=table(TRAINSET$font,train1)
+testconf1=table(TESTSET$font,test1)
 
 #conf in %'s
-trainconf101=trainconf101/apply(trainconf101,1,sum)
-testconf101=testconf101/apply(testconf101,1,sum)
+trainconf1=trainconf1/apply(trainconf1,1,sum)
+testconf1=testconf1/apply(testconf1,1,sum)
 
 #(1.5)
 p=as.numeric(diag(testconf101))
@@ -133,10 +133,10 @@ for(L in 0:9)  for(M in 10:19)  PACK2=c(PACK2,sprintf('r%ic%i',L,M))
 for(L in 10:19)  for(M in 10:19)  PACK3=c(PACK3,sprintf('r%ic%i',L,M))
 for(L in 10:19)  for(M in 0:9)  PACK4=c(PACK4,sprintf('r%ic%i',L,M))
 
-P1KN=knn(TRAINSET[,PACK1],TESTSET[,PACK1],TRAINSET$font,101)
-P2KN=knn(TRAINSET[,PACK2],TESTSET[,PACK2],TRAINSET$font,101)
-P3KN=knn(TRAINSET[,PACK3],TESTSET[,PACK3],TRAINSET$font,101)
-P4KN=knn(TRAINSET[,PACK4],TESTSET[,PACK4],TRAINSET$font,101)
+P1KN=knn(TRAINSET[,PACK1],TESTSET[,PACK1],TRAINSET$font,Kbest)
+P2KN=knn(TRAINSET[,PACK2],TESTSET[,PACK2],TRAINSET$font,Kbest)
+P3KN=knn(TRAINSET[,PACK3],TESTSET[,PACK3],TRAINSET$font,Kbest)
+P4KN=knn(TRAINSET[,PACK4],TESTSET[,PACK4],TRAINSET$font,Kbest)
 
 w1=mean(P1KN==TESTSET$font)
 w2=mean(P2KN==TESTSET$font)
@@ -155,18 +155,18 @@ W_TESTSET=cbind(w1*TESTSET[,PACK1]/sum(COM),
                 w4*TESTSET[,PACK4]/sum(COM))
 
 #KNN on normalized sets
-W_train101=knn(W_TRAINSET,W_TRAINSET,TRAINSET$font,Kbest)
-W_test101=knn(W_TRAINSET,W_TESTSET,TRAINSET$font,Kbest)
+W_train1=knn(W_TRAINSET,W_TRAINSET,TRAINSET$font,Kbest)
+W_test1=knn(W_TRAINSET,W_TESTSET,TRAINSET$font,Kbest)
 
-W_trainperf101=mean(W_train101==TRAINSET$font)
-W_testperf101=mean(W_test101==TESTSET$font)
+W_trainperf1=mean(W_train101==TRAINSET$font)
+W_testperf1=mean(W_test101==TESTSET$font)
 
 #confusion matrix
-W_trainconf101=table(TRAINSET$font,W_train101)
-W_testconf101=table(TESTSET$font,W_test101)
+W_trainconf1=table(TRAINSET$font,W_train1)
+W_testconf1=table(TESTSET$font,W_test1)
 
 #conf in %'s
-W_trainconf101/apply(trainconf101,1,sum) 
-W_testconf101/apply(testconf101,1,sum)
+W_trainconf1/apply(W_trainconf1,1,sum) 
+W_testconf1/apply(W_testconf1,1,sum)
 
 
