@@ -114,16 +114,34 @@ testconf1=table(TESTSET$font,test1)
 trainconf1=trainconf1/apply(trainconf1,1,sum)
 testconf1=testconf1/apply(testconf1,1,sum)
 
-#(1.5)
-p=as.numeric(diag(testconf101))
-#N*p(N)>4 for all 3 cases, assuming error has approximate normal distribution, 
-sigmaCL1=sqrt(p[1]*(1-p[1])/nrow(testCL1))
-sigmaCL2=sqrt(p[2]*(1-p[2])/nrow(testCL2))
-sigmaCL3=sqrt(p[3]*(1-p[3])/nrow(testCL3))
-#95% confidence interval
-intervalCL1=c(p[1]-sigmaCL1*qnorm(1-0.05/2), p[1]+sigmaCL1*qnorm(1-0.05/2))
-intervalCL2=c(p[2]-sigmaCL1*qnorm(1-0.05/2), p[2]+sigmaCL2*qnorm(1-0.05/2))
-intervalCL3=c(p[3]-sigmaCL1*qnorm(1-0.05/2), p[3]+sigmaCL3*qnorm(1-0.05/2))
+#(1.5) N*p(N)>4 for all 3 cases, assuming error has approximate normal distribution
+#test set:
+p=as.numeric(diag(testconf1))
+sigmaCL1test=sqrt(p[1]*(1-p[1])/nrow(testCL1))
+sigmaCL2test=sqrt(p[2]*(1-p[2])/nrow(testCL2))
+sigmaCL3test=sqrt(p[3]*(1-p[3])/nrow(testCL3))
+#90% confidence interval
+intervalCL1test=c(p[1]-sigmaCL1test*qnorm(1-0.1/2), p[1]+sigmaCL1test*qnorm(1-0.1/2))
+intervalCL2test=c(p[2]-sigmaCL1test*qnorm(1-0.1/2), p[2]+sigmaCL2test*qnorm(1-0.1/2))
+intervalCL3test=c(p[3]-sigmaCL1test*qnorm(1-0.1/2), p[3]+sigmaCL3test*qnorm(1-0.1/2))
+
+#training set:
+p=as.numeric(diag(trainconf1))
+sigmaCL1train=sqrt(p[1]*(1-p[1])/nrow(trainCL1))
+sigmaCL2train=sqrt(p[2]*(1-p[2])/nrow(trainCL2))
+sigmaCL3train=sqrt(p[3]*(1-p[3])/nrow(trainCL3))
+#90% confidence interval
+intervalCL1train=c(p[1]-sigmaCL1train*qnorm(1-0.1/2), p[1]+sigmaCL1train*qnorm(1-0.1/2))
+intervalCL2train=c(p[2]-sigmaCL1train*qnorm(1-0.1/2), p[2]+sigmaCL2train*qnorm(1-0.1/2))
+intervalCL3train=c(p[3]-sigmaCL1train*qnorm(1-0.1/2), p[3]+sigmaCL3train*qnorm(1-0.1/2))
+
+#90% confidence interval for differences (train-test):
+std1 = sqrt(sigmaCL1test^2+sigmaCL1train^2)
+std2 = sqrt(sigmaCL2test^2+sigmaCL2train^2)
+std3 = sqrt(sigmaCL3test^2+sigmaCL3train^2)
+intervalCL1diff = c((ptrain[1]-ptest[1])-std1*qnorm(1-0.1/2), (ptrain[1]-ptest[1])+std1*qnorm(1-0.1/2))
+intervalCL2diff = c((ptrain[2]-ptest[2])-std2*qnorm(1-0.1/2), (ptrain[2]-ptest[2])+std2*qnorm(1-0.1/2))
+intervalCL3diff = c((ptrain[3]-ptest[3])-std3*qnorm(1-0.1/2), (ptrain[3]-ptest[3])+std3*qnorm(1-0.1/2))
 
 #(1.6,1.7) Binning by groups of pixels
 PACK1=NULL;PACK2=NULL;PACK3=NULL;PACK4=NULL;
@@ -158,8 +176,8 @@ W_TESTSET=cbind(w1*TESTSET[,PACK1]/sum(COM),
 W_train1=knn(W_TRAINSET,W_TRAINSET,TRAINSET$font,Kbest)
 W_test1=knn(W_TRAINSET,W_TESTSET,TRAINSET$font,Kbest)
 
-W_trainperf1=mean(W_train101==TRAINSET$font)
-W_testperf1=mean(W_test101==TESTSET$font)
+W_trainperf1=mean(W_train1==TRAINSET$font)
+W_testperf1=mean(W_test1==TESTSET$font)
 
 #confusion matrix
 W_trainconf1=table(TRAINSET$font,W_train1)
