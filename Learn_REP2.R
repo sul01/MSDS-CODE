@@ -135,6 +135,13 @@ intervalCL1train=c(p[1]-sigmaCL1train*qnorm(1-0.1/2), p[1]+sigmaCL1train*qnorm(1
 intervalCL2train=c(p[2]-sigmaCL1train*qnorm(1-0.1/2), p[2]+sigmaCL2train*qnorm(1-0.1/2))
 intervalCL3train=c(p[3]-sigmaCL1train*qnorm(1-0.1/2), p[3]+sigmaCL3train*qnorm(1-0.1/2))
 
+#90% confidence interval for differences (train-test):
+std1 = sqrt(sigmaCL1test^2+sigmaCL1train^2)
+std2 = sqrt(sigmaCL2test^2+sigmaCL2train^2)
+std3 = sqrt(sigmaCL3test^2+sigmaCL3train^2)
+intervalCL1diff = c((ptrain[1]-ptest[1])-std1*qnorm(1-0.1/2), (ptrain[1]-ptest[1])+std1*qnorm(1-0.1/2))
+intervalCL2diff = c((ptrain[2]-ptest[2])-std2*qnorm(1-0.1/2), (ptrain[2]-ptest[2])+std2*qnorm(1-0.1/2))
+intervalCL3diff = c((ptrain[3]-ptest[3])-std3*qnorm(1-0.1/2), (ptrain[3]-ptest[3])+std3*qnorm(1-0.1/2))
 
 #(1.6,1.7) Binning by groups of pixels
 PACK1=NULL;PACK2=NULL;PACK3=NULL;PACK4=NULL;
