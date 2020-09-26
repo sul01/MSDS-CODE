@@ -116,24 +116,24 @@ testconf1=testconf1/apply(testconf1,1,sum)
 
 #(1.5) N*p(N)>4 for all 3 cases, assuming error has approximate normal distribution
 #test set:
-p=as.numeric(diag(testconf1))
-sigmaCL1test=sqrt(p[1]*(1-p[1])/nrow(testCL1))
-sigmaCL2test=sqrt(p[2]*(1-p[2])/nrow(testCL2))
-sigmaCL3test=sqrt(p[3]*(1-p[3])/nrow(testCL3))
+ptest=as.numeric(diag(testconf1))
+sigmaCL1test=sqrt(ptest[1]*(1-ptest[1])/nrow(testCL1))
+sigmaCL2test=sqrt(ptest[2]*(1-ptest[2])/nrow(testCL2))
+sigmaCL3test=sqrt(ptest[3]*(1-ptest[3])/nrow(testCL3))
 #90% confidence interval
-intervalCL1test=c(p[1]-sigmaCL1test*qnorm(1-0.1/2), p[1]+sigmaCL1test*qnorm(1-0.1/2))
-intervalCL2test=c(p[2]-sigmaCL1test*qnorm(1-0.1/2), p[2]+sigmaCL2test*qnorm(1-0.1/2))
-intervalCL3test=c(p[3]-sigmaCL1test*qnorm(1-0.1/2), p[3]+sigmaCL3test*qnorm(1-0.1/2))
+intervalCL1test=c(ptest[1]-sigmaCL1test*qnorm(1-0.1/2), ptest[1]+sigmaCL1test*qnorm(1-0.1/2))
+intervalCL2test=c(ptest[2]-sigmaCL2test*qnorm(1-0.1/2), ptest[2]+sigmaCL2test*qnorm(1-0.1/2))
+intervalCL3test=c(ptest[3]-sigmaCL3test*qnorm(1-0.1/2), ptest[3]+sigmaCL3test*qnorm(1-0.1/2))
 
 #training set:
-p=as.numeric(diag(trainconf1))
-sigmaCL1train=sqrt(p[1]*(1-p[1])/nrow(trainCL1))
-sigmaCL2train=sqrt(p[2]*(1-p[2])/nrow(trainCL2))
-sigmaCL3train=sqrt(p[3]*(1-p[3])/nrow(trainCL3))
+ptrain=as.numeric(diag(trainconf1))
+sigmaCL1train=sqrt(ptrain[1]*(1-ptrain[1])/nrow(trainCL1))
+sigmaCL2train=sqrt(ptrain[2]*(1-ptrain[2])/nrow(trainCL2))
+sigmaCL3train=sqrt(ptrain[3]*(1-ptrain[3])/nrow(trainCL3))
 #90% confidence interval
-intervalCL1train=c(p[1]-sigmaCL1train*qnorm(1-0.1/2), p[1]+sigmaCL1train*qnorm(1-0.1/2))
-intervalCL2train=c(p[2]-sigmaCL1train*qnorm(1-0.1/2), p[2]+sigmaCL2train*qnorm(1-0.1/2))
-intervalCL3train=c(p[3]-sigmaCL1train*qnorm(1-0.1/2), p[3]+sigmaCL3train*qnorm(1-0.1/2))
+intervalCL1train=c(ptrain[1]-sigmaCL1train*qnorm(1-0.1/2), ptrain[1]+sigmaCL1train*qnorm(1-0.1/2))
+intervalCL2train=c(ptrain[2]-sigmaCL2train*qnorm(1-0.1/2), ptrain[2]+sigmaCL2train*qnorm(1-0.1/2))
+intervalCL3train=c(ptrain[3]-sigmaCL3train*qnorm(1-0.1/2), ptrain[3]+sigmaCL3train*qnorm(1-0.1/2))
 
 #90% confidence interval for differences (train-test):
 std1 = sqrt(sigmaCL1test^2+sigmaCL1train^2)
