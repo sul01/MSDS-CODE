@@ -128,37 +128,8 @@ testconf1=table(TESTSET$font,test1)
 trainconf1=trainconf1/apply(trainconf1,1,sum)
 testconf1=testconf1/apply(testconf1,1,sum)
 
-#(1.5) N*p(N)>4 for all 3 cases, assuming error has approximate normal distribution
-#test set:
-ptest=as.numeric(diag(testconf1))
-sigmaCL1test=sqrt(ptest[1]*(1-ptest[1])/nrow(testCL1))
-sigmaCL2test=sqrt(ptest[2]*(1-ptest[2])/nrow(testCL2))
-sigmaCL3test=sqrt(ptest[3]*(1-ptest[3])/nrow(testCL3))
-#90% confidence interval
-intervalCL1test=c(ptest[1]-sigmaCL1test*qnorm(1-0.1/2), ptest[1]+sigmaCL1test*qnorm(1-0.1/2))
-intervalCL2test=c(ptest[2]-sigmaCL2test*qnorm(1-0.1/2), ptest[2]+sigmaCL2test*qnorm(1-0.1/2))
-intervalCL3test=c(ptest[3]-sigmaCL3test*qnorm(1-0.1/2), ptest[3]+sigmaCL3test*qnorm(1-0.1/2))
-
-#training set:
-ptrain=as.numeric(diag(trainconf1))
-sigmaCL1train=sqrt(ptrain[1]*(1-ptrain[1])/nrow(trainCL1))
-sigmaCL2train=sqrt(ptrain[2]*(1-ptrain[2])/nrow(trainCL2))
-sigmaCL3train=sqrt(ptrain[3]*(1-ptrain[3])/nrow(trainCL3))
-#90% confidence interval
-intervalCL1train=c(ptrain[1]-sigmaCL1train*qnorm(1-0.1/2), ptrain[1]+sigmaCL1train*qnorm(1-0.1/2))
-intervalCL2train=c(ptrain[2]-sigmaCL2train*qnorm(1-0.1/2), ptrain[2]+sigmaCL2train*qnorm(1-0.1/2))
-intervalCL3train=c(ptrain[3]-sigmaCL3train*qnorm(1-0.1/2), ptrain[3]+sigmaCL3train*qnorm(1-0.1/2))
-
-#90% confidence interval for differences (train-test):
-std1 = sqrt(sigmaCL1test^2+sigmaCL1train^2)
-std2 = sqrt(sigmaCL2test^2+sigmaCL2train^2)
-std3 = sqrt(sigmaCL3test^2+sigmaCL3train^2)
-intervalCL1diff = c((ptrain[1]-ptest[1])-std1*qnorm(1-0.1/2), (ptrain[1]-ptest[1])+std1*qnorm(1-0.1/2))
-intervalCL2diff = c((ptrain[2]-ptest[2])-std2*qnorm(1-0.1/2), (ptrain[2]-ptest[2])+std2*qnorm(1-0.1/2))
-intervalCL3diff = c((ptrain[3]-ptest[3])-std3*qnorm(1-0.1/2), (ptrain[3]-ptest[3])+std3*qnorm(1-0.1/2))
-=======
 #(1.5)
-p=as.numeric(diag(testconf101))
+p=as.numeric(diag(testconf1))
 #N*p(N)>4 for all 3 cases, assuming error has approximate normal distribution, 
 sigmaCL1=sqrt(p[1]*(1-p[1])/nrow(testCL1))
 sigmaCL2=sqrt(p[2]*(1-p[2])/nrow(testCL2))
@@ -189,17 +160,15 @@ w1=mean(P1KN==TESTSET$font)
 w2=mean(P2KN==TESTSET$font)
 w3=mean(P3KN==TESTSET$font)
 w4=mean(P4KN==TESTSET$font)
+COM=w1+w2+w3+w4
+w1=w1/(COM)
+w2=w2/(COM)
+w3=w3/(COM)
+w4=w4/(COM)
 
 #(1.8)Weigthing and normalization
-COM=w1*TESTSET[,PACK1]+w2*TESTSET[,PACK2]+w3*TESTSET[,PACK3]+w4*TESTSET[,PACK4]
-W_TRAINSET=cbind(w1*TRAINSET[,PACK1]/sum(COM),
-                 w2*TRAINSET[,PACK2]/sum(COM),
-                 w3*TRAINSET[,PACK3]/sum(COM),
-                 w4*TRAINSET[,PACK4]/sum(COM))
-W_TESTSET=cbind(w1*TESTSET[,PACK1]/sum(COM),
-                w2*TESTSET[,PACK2]/sum(COM),
-                w3*TESTSET[,PACK3]/sum(COM),
-                w4*TESTSET[,PACK4]/sum(COM))
+W_TRAINSET=cbind(w1*TRAINSET[,PACK1],w2*TRAINSET[,PACK2],w3*TRAINSET[,PACK3],w4*TRAINSET[,PACK4])
+W_TESTSET=cbind(w1*TESTSET[,PACK1],w2*TESTSET[,PACK2],w3*TESTSET[,PACK3],w4*TESTSET[,PACK4])
 
 #KNN on normalized sets
 set.seed(1)
