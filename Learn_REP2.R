@@ -186,3 +186,31 @@ W_testconf1=table(TESTSET$font,W_test1)
 #conf in %'s
 W_trainconf1/apply(W_trainconf1,1,sum) 
 W_testconf1/apply(W_testconf1,1,sum)
+
+#HW3, PCA
+#correlation matrix
+CORR=cor(DATA[,-(1:3)])
+
+#eigenvalues/vectors
+lambda = eigen(CORR)$values
+W = eigen(CORR)$vectors
+
+#eigenvalues vs r
+plot(lambda, ylab='eigenvalue', xlab='r')
+
+PVEs = NULL
+for(r in 1:400) PVEs=c(PVEs, sum(lambda[1:r])/400)
+#PVE vs r
+plot(PVEs, ylab='PVE(r)', xlab='r')
+
+r = which(PVEs[]>0.95)[1]
+
+#create new dataset
+W.t = t(W) #transpose W
+Y = as.matrix(DATA[,-(1:3)])%*%W.t 
+Y = Y[,1:r]
+
+newDATA = cbind(DATA[,1:3], as.data.frame(Y))
+
+#redo KNN with newDATA...
+
