@@ -8,9 +8,9 @@ BITSTREAMVERA=read_csv("Documents/R/fonts/BITSTREAMVERA.csv")
 
 #Cleaning and sorting
 drop_names=c("fontVariant","m_label","orientation","m_top","m_left","originalH","originalW","h","w")
-CL1=subset(CONSOLAS[complete.cases(CONSOLAS),-which(names(CONSOLAS) %in% drop_names)],strength==0.4&italic==0)
-CL2=subset(EBRIMA[complete.cases(EBRIMA),-which(names(EBRIMA) %in% drop_names)],strength==0.4&italic==0)
-CL3=subset(BITSTREAMVERA[complete.cases(BITSTREAMVERA),-which(names(BITSTREAMVERA) %in% drop_names)],strength==0.4&italic==0)
+CL1=subset(BITSTREAMVERA[complete.cases(BITSTREAMVERA),-which(names(BITSTREAMVERA) %in% drop_names)],strength==0.4&italic==0)
+CL2=subset(CONSOLAS[complete.cases(CONSOLAS),-which(names(CONSOLAS) %in% drop_names)],strength==0.4&italic==0)
+CL3=subset(EBRIMA[complete.cases(EBRIMA),-which(names(EBRIMA) %in% drop_names)],strength==0.4&italic==0)
 DATA=rbind(CL1,CL2,CL3)
 
 #mean and standard deviation
@@ -81,9 +81,9 @@ newDATA = cbind(DATA[,1:3], as.data.frame(Y))
 
 #re-classifying the new data
 #classes
-CL1n = subset(newDATA, newDATA[,1]=='CONSOLAS') 
-CL2n = subset(newDATA, newDATA[,1]=='EBRIMA') 
-CL3n = subset(newDATA, newDATA[,1]=='BITSTREAMVERA') 
+CL1n = subset(newDATA, newDATA[,1]=='BITSTREAMVERA') 
+CL2n = subset(newDATA, newDATA[,1]=='CONSOLAS') 
+CL3n = subset(newDATA, newDATA[,1]=='EBRIMA') 
 
 #assign selections ~20% of each class
 r1n = sort(sample(nrow(CL1n),nrow(CL1n)*0.2))
@@ -98,4 +98,30 @@ TRAINSETn=rbind(trainCL1n,trainCL2n,trainCL3n)
 TESTSETn=rbind(testCL1n,testCL2n,testCL3n)
 
 #redo KNN with newDATA
+Kbest=1
 
+#train/test
+train1n=knn(TRAINSETn[,-(1:3)],TRAINSETn[,-(1:3)],TRAINSETn$font,Kbest)
+test1n=knn(TRAINSETn[,-(1:3)],TESTSETn[,-(1:3)],TRAINSETn$font,Kbest)
+
+trainperf1n=mean(train1n==TRAINSETn$font)
+testperf1n=mean(test1n==TESTSETn$font)
+
+#confusion matrices 
+trainconf1n=table(TRAINSETn$font,train1n)
+testconf1n=table(TESTSETn$font,test1n)
+
+#conf in %'s
+trainconf1n=trainconf1n/apply(trainconf1n,1,sum)
+testconf1n=testconf1n/apply(testconf1n,1,sum)
+
+#scatter plots ?
+#(Y1,Y2)
+plot(CL1n[,4], CL1n[,5])#BITSTREAMVERA
+points(CL2n[,4], CL2n[,5], col='blue')#CONSOLAS
+points(CL3n[,4], CL3n[,5], col='red')#EBRIMA
+
+#(Y1,Y3)
+plot(CL1n[,4], CL1n[,6])#BITSTREAMVERA
+points(CL2n[,4], CL2n[,6], col='blue')#CONSOLAS
+points(CL3n[,4], CL3n[,6], col='red')#EBRIMA
