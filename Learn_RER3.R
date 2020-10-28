@@ -57,16 +57,19 @@ CORR=cor(DATA[,-(1:3)])
 lambda = eigen(CORR)$values
 W = eigen(CORR)$vectors
 
-#eigenvalues vs r
-plot(lambda, ylab='eigenvalue', xlab='r')
-
 PVEs = NULL
 for(r in 1:400) PVEs=c(PVEs, sum(lambda[1:r])/400)
-#PVE vs r
-plot(PVEs, ylab='PVE(r)', xlab='r')
-
 R=c(1:400)
-ggplot(as.data.frame(cbind(R,PVEs)),aes(R,PVEs))+
+EIG=as.data.frame(cbind(R,lambda,PVEs,W))
+
+#eigenvalues vs r
+plot(lambda, ylab='eigenvalue', xlab='r')
+ggplot(EIG,aes(R,lambda))+
+  geom_point()+
+  labs(y="Eigen Values")
+
+#PVE vs r
+ggplot(EIG,aes(R,PVEs))+
   geom_point()+
   labs(y="% Variacne")
 
@@ -127,3 +130,6 @@ for(i in 1:6){
     theme(legend.position="bottom")
   print(plot)
 }
+
+
+
