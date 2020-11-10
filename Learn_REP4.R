@@ -70,7 +70,7 @@ FREQ = rbind(fBitstream, fConsolas, fEbrima)
 #4
 PRED = DATA
 PRED$font_pred = vector(mode = "list", length = nrow(DATA))
-PRED = PRED[,c(1,404,(2:203))]
+PRED = PRED[,c(1,404,(2:403))]
 for(k in 1:bestk){
   PRED[as.numeric(names(clusterk$cluster[clusterk$cluster == k])),]$font_pred = TOP[k]
 }
