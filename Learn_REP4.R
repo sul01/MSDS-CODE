@@ -4,6 +4,7 @@ library(ggplot2)
 CONSOLAS=read_csv("Documents/R/fonts/CONSOLAS.csv")
 EBRIMA=read_csv("Documents/R/fonts/EBRIMA.csv")
 BITSTREAMVERA=read_csv("Documents/R/fonts/BITSTREAMVERA.csv")
+set.seed(1)
 
 #Cleaning and sorting
 drop_names=c("fontVariant","m_label","orientation","m_top","m_left","originalH","originalW","h","w")
@@ -68,7 +69,7 @@ FREQ = rbind(fBitstream, fConsolas, fEbrima)
 
 #4
 PRED = DATA
-PRED$font_pred = kclusters = vector(mode = "list", length = nrow(DATA))
+PRED$font_pred = vector(mode = "list", length = nrow(DATA))
 PRED = PRED[,c(1,404,(2:203))]
 for(k in 1:bestk){
   PRED[as.numeric(names(clusterk$cluster[clusterk$cluster == k])),]$font_pred = TOP[k]
