@@ -4,6 +4,7 @@ library(ggplot2)
 CONSOLAS=read_csv("Documents/R/fonts/CONSOLAS.csv")
 EBRIMA=read_csv("Documents/R/fonts/EBRIMA.csv")
 BITSTREAMVERA=read_csv("Documents/R/fonts/BITSTREAMVERA.csv")
+set.seed(1)
 
 #Cleaning and sorting
 drop_names=c("fontVariant","m_label","orientation","m_top","m_left","originalH","originalW","h","w")
@@ -33,11 +34,11 @@ for(i in 1:10){
 }
 plot(perfk, type='l')
 
-bestk = 7#(Might change)
+bestk = 3#(Might change)
 
 #2
 clusterk = kclusters[[bestk]]
-CENT = cluster$center
+CENT = clusterk$center
 
 #PCA
 pcaCENT = prcomp(CENT, scale=T)$x[,(1:3)]
@@ -48,8 +49,10 @@ pcaBig = prcomp(bigCLU[,-(1:3)])$x[,(1:3)]
 #(DISPLAY pcaBIG vectors)
 
 #3
+fonts = c('BITSTREAMVERA', 'CONSOLAS', 'EBRIMA')
 gini = NULL #gini index for [kth] cluster
-fBitstream = NULL; fConsolas = NULL; fEbrima = NULL #count of font cases in cluster[k]
+fBitstream = NULL; fConsolas = NULL; fEbrima = NULL #frequency of font cases in cluster[k]
+TOP = NULL 
 
 for(k in 1:bestk){
   CLU = DATA[as.numeric(names(clusterk$cluster[clusterk$cluster == k])),]
@@ -58,7 +61,21 @@ for(k in 1:bestk){
   f3 = nrow(subset(CLU, CLU[,1]=='EBRIMA'))/nrow(CLU)
   gini = c(gini, f1*(1-f1)+f2*(1-f2)+f3*(1-f3))
   fBitstream = c(fBitstream, f1); fConsolas = c(fConsolas, f2); fEbrima = c(fEbrima, f3)
+  TOP = c(TOP, fonts[which(c(f1,f2,f3) == max(f1,f2,f3))])
 }
 
 IMP = sum(gini)
 FREQ = rbind(fBitstream, fConsolas, fEbrima)
+
+#4
+PRED = DATA
+PRED$font_pred = vector(mode = "list", length = nrow(DATA))
+PRED = PRED[,c(1,404,(2:403))]
+for(k in 1:bestk){
+  PRED[as.numeric(names(clusterk$cluster[clusterk$cluster == k])),]$font_pred = TOP[k]
+}
+
+#confusion matrices 
+conf = table(PRED$font, unlist(PRED$font_pred))
+#conf in %'s
+conf/apply(conf,1,sum)
