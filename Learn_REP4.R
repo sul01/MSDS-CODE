@@ -1,6 +1,8 @@
 #Libraryies and Data sets
 library(readr)
 library(ggplot2)
+library(factoextra)
+library(plot3D)
 CONSOLAS=read_csv("Documents/R/fonts/CONSOLAS.csv")
 EBRIMA=read_csv("Documents/R/fonts/EBRIMA.csv")
 BITSTREAMVERA=read_csv("Documents/R/fonts/BITSTREAMVERA.csv")
@@ -32,21 +34,22 @@ perfk = NULL
 for(i in 1:10){
   perfk = c(perfk, 1-sum(kclusters[[i]]$withinss)/kclusters[[1]]$withinss)
 }
-plot(perfk, type='l')
-
-bestk = 3#(Might change)
+fviz_nbclust(DATA[,-c(1:3)],kmeans,"silhouette")
+bestk=3
 
 #2
-clusterk = kclusters[[bestk]]
-CENT = clusterk$center
+clusterk=kclusters[[bestk]]
+CENT=clusterk$center
+fviz_cluster(clusterk,data=DATA[,-c(1:3)])
 
 #PCA
-pcaCENT = prcomp(CENT, scale=T)$x[,(1:3)]
-#(DISPLAY pcaCENT ON 3D GRAPH)
+pcaCENT=prcomp(CENT, scale=T)$x[,(1:3)]
+points3D(pcaCENT[,1],pcaCENT[,2],pcaCENT[,3])
 
-bigCLU = DATA[as.numeric(names(clusterk$cluster[clusterk$cluster == which(clusterk$size==max(clusterk$size))])),]
-pcaBig = prcomp(bigCLU[,-(1:3)])$x[,(1:3)]
-#(DISPLAY pcaBIG vectors)
+DATA=cbind(DATA,cluster=clusterk$cluster)
+bigCLU=DATA[DATA$cluster==which(clusterk$size==max(clusterk$size)),]
+pcaBig=prcomp(bigCLU[,-c(1:3,405)])$x[,(1:3)]
+points3D(pcaBig[,1],pcaBig[,2],pcaBig[,3])
 
 #3
 fonts = c('BITSTREAMVERA', 'CONSOLAS', 'EBRIMA')
@@ -55,7 +58,7 @@ fBitstream = NULL; fConsolas = NULL; fEbrima = NULL #frequency of font cases in 
 TOP = NULL 
 
 for(k in 1:bestk){
-  CLU = DATA[as.numeric(names(clusterk$cluster[clusterk$cluster == k])),]
+  CLU = DATA[DATA$cluster==k,]
   f1 = nrow(subset(CLU, CLU[,1]=='BITSTREAMVERA'))/nrow(CLU)
   f2 = nrow(subset(CLU, CLU[,1]=='CONSOLAS'))/nrow(CLU)
   f3 = nrow(subset(CLU, CLU[,1]=='EBRIMA'))/nrow(CLU)
@@ -70,9 +73,8 @@ FREQ = rbind(fBitstream, fConsolas, fEbrima)
 #4
 PRED = DATA
 PRED$font_pred = vector(mode = "list", length = nrow(DATA))
-PRED = PRED[,c(1,404,(2:403))]
 for(k in 1:bestk){
-  PRED[as.numeric(names(clusterk$cluster[clusterk$cluster == k])),]$font_pred = TOP[k]
+  PRED[PRED$cluster==k,]$font_pred=TOP[k]
 }
 
 #confusion matrices 
