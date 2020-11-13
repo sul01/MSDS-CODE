@@ -26,7 +26,7 @@ DATA=rbind(cbind(CL1[,1:3],t(t(sweep(CL1[,-(1:3)],2,m))/s)),
 #1
 kclusters = vector(mode = "list", length = 10)
 for(k in 1:10){
-  kclusters[[k]] = kmeans(DATA[,-(1:3)], k, nstart=20)#(Try nstart=50 if possible)
+  kclusters[[k]] = kmeans(DATA[,-(1:3)], k, nstart=50)#(Try nstart=50 if possible)
 }
 
 #reduction of variance
@@ -44,7 +44,7 @@ fviz_cluster(clusterk,data=DATA[,-c(1:3)])
 
 #PCA
 pcaCENT=prcomp(CENT, scale=T)$x[,(1:3)]
-points3D(pcaCENT[,1],pcaCENT[,2],pcaCENT[,3])
+points3D(pcaCENT[,1],pcaCENT[,2],pcaCENT[,3],pch=19)
 
 DATA=cbind(DATA,cluster=clusterk$cluster)
 bigCLU=DATA[DATA$cluster==which(clusterk$size==max(clusterk$size)),]
@@ -53,22 +53,23 @@ points3D(pcaBig[,1],pcaBig[,2],pcaBig[,3])
 
 #3
 fonts = c('BITSTREAMVERA', 'CONSOLAS', 'EBRIMA')
-gini = NULL #gini index for [kth] cluster
-fBitstream = NULL; fConsolas = NULL; fEbrima = NULL #frequency of font cases in cluster[k]
-TOP = NULL 
+gini=NULL #gini index for [kth] cluster
+fBitstream=NULL;fConsolas=NULL;fEbrima=NULL #frequency of font cases in cluster[k]
+TOP=NULL 
 
 for(k in 1:bestk){
-  CLU = DATA[DATA$cluster==k,]
-  f1 = nrow(subset(CLU, CLU[,1]=='BITSTREAMVERA'))/nrow(CLU)
-  f2 = nrow(subset(CLU, CLU[,1]=='CONSOLAS'))/nrow(CLU)
-  f3 = nrow(subset(CLU, CLU[,1]=='EBRIMA'))/nrow(CLU)
-  gini = c(gini, f1*(1-f1)+f2*(1-f2)+f3*(1-f3))
-  fBitstream = c(fBitstream, f1); fConsolas = c(fConsolas, f2); fEbrima = c(fEbrima, f3)
-  TOP = c(TOP, fonts[which(c(f1,f2,f3) == max(f1,f2,f3))])
+  CLU=DATA[DATA$cluster==k,]
+  f1=nrow(subset(CLU, CLU[,1]=='BITSTREAMVERA'))/nrow(CLU)
+  f2=nrow(subset(CLU, CLU[,1]=='CONSOLAS'))/nrow(CLU)
+  f3=nrow(subset(CLU, CLU[,1]=='EBRIMA'))/nrow(CLU)
+  gini=c(gini,f1*(1-f1)+f2*(1-f2)+f3*(1-f3))
+  fBitstream=c(fBitstream,f1);fConsolas=c(fConsolas,f2);fEbrima=c(fEbrima, f3)
+  TOP=c(TOP,fonts[which(c(f1,f2,f3) == max(f1,f2,f3))])
+  print(TOP)
 }
 
-IMP = sum(gini)
-FREQ = rbind(fBitstream, fConsolas, fEbrima)
+IMP=sum(gini)
+FREQ=rbind(fBitstream,fConsolas,fEbrima)
 
 #4
 PRED = DATA
