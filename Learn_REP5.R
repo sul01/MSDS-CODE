@@ -78,9 +78,9 @@ accn = NULL #global accuracies
 bitstreamACCn = NULL; consolasACCn = NULL; ebrimaACCn = NULL #diagonals of the conf. matrix
 
 for(i in 1:6){
-  conf = table(TESTSET$font, rfn[[i]])
-  accn = c(accn, sum(diag(conf))/sum(conf))
-  percent = (conf/apply(conf,1,sum))
+  confn = table(TESTSET$font, rfn[[i]])
+  accn = c(accn, sum(diag(confn))/sum(confn))
+  percent = (confn/apply(confn,1,sum))
   bitstreamACCn = c(bitstreamACCn, diag(percent)[1])
   consolasACCn = c(consolasACCn, diag(percent)[2])
   ebrimaACCn = c(ebrimaACCn, diag(percent)[3])
@@ -96,11 +96,12 @@ plot(ntrees, bitstreamACCn, type='l')
 plot(ntrees, consolasACCn, type='l')
 plot(ntrees, ebrimaACCn, type='l')
 
-bntr = 100 #best ntree 
-#(Explore around the 100 range to get even better bntr)
+bntr = 200 #best ntree 
+#(Explore around the 200 range to get even better bntr?)
 
 #4.1
 bestRF = randomForest(font~., data=TRAINSET, ntree=bntr, mtry=sqrt(r), importance=T)
+#eigenvalues vs importance
 plot(lambda[1:r], bestRF$importanceSD[-c(1,2),4])
 
 #performance of bestRF on testset
@@ -128,5 +129,72 @@ newTestconf/apply(newTestconf,1,sum)
 
 #confidence intervals
 
-#5
+#5.1
+#clone the single class, rename the combined classes' classifiers
+#C1 vs C2+C3:
+trainC23 = rbind(trainCL2n, trainCL3n)
+trainC23$font = 'CONSOLAS/EBRIMA'
+testC23 = rbind(testCL2n, testCL3n)
+testC23$font = 'CONSOLAS/EBRIMA'
+trainC1vs23 = droplevels(rbind(rbind(trainCL1n, trainCL1n), trainC23))
+testC1vs23 = droplevels(rbind(rbind(testCL1n, testCL1n), testC23))
+RF1 = randomForest(font~., data=trainC1vs23, ntree=bntr, mtry=sqrt(r))
 
+#C2 vs C1+C3:
+trainC13 = rbind(trainCL1n, trainCL3n)
+trainC13$font = 'BITSTREAM/EBRIMA'
+testC13 = rbind(testCL1n, testCL3n)
+testC13$font = 'BITSTREAM/EBRIMA'
+trainC2vs13 = droplevels(rbind(rbind(trainCL2n, trainCL2n), trainC13))
+testC2vs13 = droplevels(rbind(rbind(testCL2n, testCL2n), testC13))
+RF2 = randomForest(font~., data=trainC2vs13, ntree=bntr, mtry=sqrt(r))
+
+#C3 vs C1+C2:
+trainC12 = rbind(trainCL1n, trainCL2n)
+trainC12$font = 'BITSTREAM/CONSOLAS'
+testC12 = rbind(testCL1n, testCL2n)
+testC12$font = 'BITSTREAM/CONSOLAS'
+trainC3vs12 = droplevels(rbind(rbind(trainCL3n, trainCL3n), trainC12))
+testC3vs12 = droplevels(rbind(rbind(testCL3n, testCL3n), testC12))
+RF3 = randomForest(font~., data=trainC3vs12, ntree=bntr, mtry=sqrt(r))
+
+#confusion matrix of test results
+pred1 = table(testC1vs23$font, predict(RF1, testC1vs23))
+pred2 = table(testC2vs13$font, predict(RF2, testC2vs13))
+pred3 = table(testC3vs12$font, predict(RF3, testC3vs12))
+
+#global accuracies on test sets
+A1 = sum(diag(pred1))/sum(pred1)
+A2 = sum(diag(pred2))/sum(pred2)
+A3 = sum(diag(pred3))/sum(pred3)
+
+#conf. matrix in percentage
+M1 = pred1/apply(pred1,1,sum)
+M2 = pred2/apply(pred2,1,sum)
+M3 = pred3/apply(pred3,1,sum)
+
+#5.2
+#C1 vs C2+C3
+pred1best = table(testC1vs23$font, predict(bestRF, testC1vs23))
+pred1best = cbind(pred1best[,1], pred1best[,2]+pred1best[,3])
+colnames(pred1best) = rownames(pred1best)
+
+#C2 vs C1+C3
+pred2best = table(testC2vs13$font, predict(bestRF, testC2vs13))
+pred2best = cbind(pred2best[,2], pred2best[,1]+pred2best[,3])
+colnames(pred2best) = rownames(pred2best)
+
+#C3 vs C1+C2
+pred3best = table(testC3vs12$font, predict(bestRF, testC3vs12))
+pred3best = cbind(pred3best[,3], pred3best[,1]+pred3best[,2])
+colnames(pred3best) = rownames(pred3best)
+
+#global accuracies on test sets
+B1 = sum(diag(pred1best))/sum(pred1best)
+B2 = sum(diag(pred2best))/sum(pred2best)
+B3 = sum(diag(pred3best))/sum(pred3best)
+
+#conf. matrix in percentage
+BM1 = pred1best/apply(pred1best,1,sum)
+BM2 = pred2best/apply(pred2best,1,sum)
+BM3 = pred3best/apply(pred3best,1,sum)
