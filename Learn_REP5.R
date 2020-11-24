@@ -58,6 +58,8 @@ testCL2n=CL2n[r2n,];trainCL2n=CL2n[-r2n,]
 testCL3n=CL3n[r3n,];trainCL3n=CL3n[-r3n,]
 TRAINSET=rbind(trainCL1n,trainCL2n,trainCL3n)
 TESTSET=rbind(testCL1n,testCL2n,testCL3n)
+TRAINSET$font=as.factor(TRAINSET$font)
+TESTSET$font=as.factor(TESTSET$font)
 
 #3.1
 rfTrain = randomForest(font~., data=TRAINSET, ntree=100, mtry=sqrt(r))
