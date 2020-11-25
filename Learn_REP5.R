@@ -49,9 +49,9 @@ CL2n=subset(newDATA,newDATA[,1]=='CONSOLAS')
 CL3n=subset(newDATA,newDATA[,1]=='EBRIMA') 
 
 #assign selections ~20% of each class
-r1n=sort(sample(nrow(CL1n),nrow(CL1n)*0.2))
-r2n=sort(sample(nrow(CL2n),nrow(CL2n)*0.2))
-r3n=sort(sample(nrow(CL3n),nrow(CL3n)*0.2))
+set.seed(1);r1n=sort(sample(nrow(CL1n),nrow(CL1n)*0.2))
+set.seed(1);r2n=sort(sample(nrow(CL2n),nrow(CL2n)*0.2))
+set.seed(1);r3n=sort(sample(nrow(CL3n),nrow(CL3n)*0.2))
 #define test&training sets
 testCL1n=CL1n[r1n,];trainCL1n=CL1n[-r1n,]
 testCL2n=CL2n[r2n,];trainCL2n=CL2n[-r2n,]
@@ -70,41 +70,55 @@ rfTrain$confusion[,-4]/apply(rfTrain$confusion[,-4],1,sum)
 rfTestconf = table(TESTSET$font, rfPred); rfTestconf/apply(rfTestconf,1,sum)
 
 #3.2
-ntrees = c(10,50,100,200,300,400)
+ntrees = c(1:400) 
 rfn = vector(mode = "list", length = length(ntrees)) #test predictions
-for(n in 1:length(ntrees)){
-  rfn[[n]] = predict(randomForest(font~., data=TRAINSET, ntree=ntrees[n], mtry=sqrt(r)), TESTSET)
-}
-
 accn = NULL #global accuracies
 bitstreamACCn = NULL; consolasACCn = NULL; ebrimaACCn = NULL #diagonals of the conf. matrix
 
-for(i in 1:6){
+for(n in 1:length(ntrees)){
+  rfn[[i]] = predict(randomForest(font~., data=TRAINSET, ntree=ntrees[i], mtry=sqrt(r)), TESTSET)
+}
+
+for(i in 1:length(ntrees)){
+  rfn[[i]] = predict(randomForest(font~., data=TRAINSET, ntree=ntrees[i], mtry=sqrt(r)), TESTSET)
   confn = table(TESTSET$font, rfn[[i]])
   accn = c(accn, sum(diag(confn))/sum(confn))
   percent = (confn/apply(confn,1,sum))
   bitstreamACCn = c(bitstreamACCn, diag(percent)[1])
   consolasACCn = c(consolasACCn, diag(percent)[2])
   ebrimaACCn = c(ebrimaACCn, diag(percent)[3])
-  print(sprintf("conf%i (n=%i):", i, ntrees[i]))
-  print(percent)#display all 6 matrices
 }
 
-#accuracy vs ntrees
-plot(ntrees,accn, type='l')
+#print(sprintf("conf%i (n=%i):", i, ntrees[i]))
+#print(percent)#display all matrices
+
+#accuracy  vs ntrees
+ACTREE=as.data.frame(cbind(ntrees,accn,bitstreamACCn,consolasACCn,ebrimaACCn))
+
+ggplot(ACTREE)+
+  geom_line(aes(ntrees,accn))+
+  labs(x="Number of Trees",y="Accuracy")
 
 #diagonals(font acc) vs ntrees
-plot(ntrees, bitstreamACCn, type='l')
-plot(ntrees, consolasACCn, type='l')
-plot(ntrees, ebrimaACCn, type='l')
+ggplot(ACTREE)+
+  geom_line(aes(ntrees,accn,color="black"))+
+  geom_line(aes(ntrees,bitstreamACCn,color="red"))+
+  geom_line(aes(ntrees,consolasACCn,color="blue"))+
+  geom_line(aes(ntrees,ebrimaACCn,color="green"))+
+  labs(x="Number of Trees",y="Accuracy")+
+  scale_color_manual(labels=names(ACTREE[,-c(1:2)]),values=c("red","blue","green"))
 
-bntr = 200 #best ntree 
-#(Explore around the 200 range to get even better bntr?)
+bntr = which.max(accn) #best ntree 
 
 #4.1
 bestRF = randomForest(font~., data=TRAINSET, ntree=bntr, mtry=sqrt(r), importance=T)
+
 #eigenvalues vs importance
-plot(lambda[1:r], bestRF$importanceSD[-c(1,2),4])
+IMK=as.data.frame(cbind("LK"=lambda[1:r],"IMK"=bestRF$importanceSD[-c(1,2),4]))
+
+ggplot(IMK,aes(LK,IMK))+
+  geom_point()+
+  labs(x="Eignvalue",y="Importances")
 
 #performance of bestRF on testset
 bestPred = predict(bestRF, TESTSET) 
@@ -113,21 +127,33 @@ bestTestconf/apply(bestTestconf,1,sum)
 
 #4.2
 #assign new selections ~20% of each class
-r1n=sort(sample(nrow(CL1n),nrow(CL1n)*0.2))
-r2n=sort(sample(nrow(CL2n),nrow(CL2n)*0.2))
-r3n=sort(sample(nrow(CL3n),nrow(CL3n)*0.2))
+set.seed(2);r1n=sort(sample(nrow(CL1n),nrow(CL1n)*0.2))
+set.seed(2);r2n=sort(sample(nrow(CL2n),nrow(CL2n)*0.2))
+set.seed(2);r3n=sort(sample(nrow(CL3n),nrow(CL3n)*0.2))
 #define new test&training sets
 testCL1n=CL1n[r1n,];trainCL1n=CL1n[-r1n,]
 testCL2n=CL2n[r2n,];trainCL2n=CL2n[-r2n,]
 testCL3n=CL3n[r3n,];trainCL3n=CL3n[-r3n,]
 newTRAINSET=rbind(trainCL1n,trainCL2n,trainCL3n)
 newTESTSET=rbind(testCL1n,testCL2n,testCL3n)
+newTRAINSET$font=as.factor(newTRAINSET$font)
+newTESTSET$font=as.factor(newTESTSET$font)
 
 newRF = randomForest(font~., data=newTRAINSET, ntree=bntr, mtry=sqrt(r))
 newPred = predict(newRF, newTESTSET)
-#test conf. matrix
+
+#Accuracy & test conf. matrix
+accn_n = NULL #global accuracies
+bitstreamACCn_n = NULL; consolasACCn_n = NULL; ebrimaACCn_n = NULL #diagonals of the conf. matrix
+
 newTestconf = table(newTESTSET$font, newPred)
+accn_n = c(accn_n, sum(diag(newTestconf))/sum(newTestconf))
+percent_n = (newTestconf/apply(newTestconf,1,sum))
+bitstreamACCn_n = c(bitstreamACCn_n, diag(percent)[1])
+consolasACCn_n = c(consolasACCn_n, diag(percent)[2])
+ebrimaACCn_n = c(ebrimaACCn_n, diag(percent)[3])
 newTestconf/apply(newTestconf,1,sum)
+
 
 #confidence intervals
 
