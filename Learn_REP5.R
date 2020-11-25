@@ -179,7 +179,7 @@ p2 = diag(bestTestconf)
 sigmaCL1best=sqrt(p2[1]*(1-p2[1])/nrow(testCL1n))
 sigmaCL2best=sqrt(p2[2]*(1-p2[2])/nrow(testCL2n))
 sigmaCL3best=sqrt(p2[3]*(1-p2[3])/nrow(testCL3n))
-#95% confidence interval
+#90% confidence interval
 intervalCL1best=c(p2[1]-sigmaCL1best*qnorm(1-0.1/2), p2[1]+sigmaCL1best*qnorm(1-0.1/2))
 intervalCL2best=c(p2[2]-sigmaCL2best*qnorm(1-0.1/2), p2[2]+sigmaCL2best*qnorm(1-0.1/2))
 intervalCL3best=c(p2[3]-sigmaCL3best*qnorm(1-0.1/2), p2[3]+sigmaCL3best*qnorm(1-0.1/2))
@@ -188,28 +188,22 @@ intervalCL3best=c(p2[3]-sigmaCL3best*qnorm(1-0.1/2), p2[3]+sigmaCL3best*qnorm(1-
 #5.1
 #clone the single class, rename the combined classes' classifiers
 #C1 vs C2+C3:
-trainC23 = rbind(trainCL2n, trainCL3n)
-trainC23$font = 'CONSOLAS/EBRIMA'
-testC23 = rbind(testCL2n, testCL3n)
-testC23$font = 'CONSOLAS/EBRIMA'
+trainC23 = rbind(trainCL2n, trainCL3n); trainC23$font = 'CONSOLAS/EBRIMA'
+testC23 = rbind(testCL2n, testCL3n); testC23$font = 'CONSOLAS/EBRIMA'
 trainC1vs23 = droplevels(rbind(rbind(trainCL1n, trainCL1n), trainC23))
 testC1vs23 = droplevels(rbind(rbind(testCL1n, testCL1n), testC23))
 RF1 = randomForest(font~., data=trainC1vs23, ntree=bntr, mtry=sqrt(r))
 
 #C2 vs C1+C3:
-trainC13 = rbind(trainCL1n, trainCL3n)
-trainC13$font = 'BITSTREAM/EBRIMA'
-testC13 = rbind(testCL1n, testCL3n)
-testC13$font = 'BITSTREAM/EBRIMA'
+trainC13 = rbind(trainCL1n, trainCL3n); trainC13$font = 'BITSTREAM/EBRIMA'
+testC13 = rbind(testCL1n, testCL3n); testC13$font = 'BITSTREAM/EBRIMA'
 trainC2vs13 = droplevels(rbind(rbind(trainCL2n, trainCL2n), trainC13))
 testC2vs13 = droplevels(rbind(rbind(testCL2n, testCL2n), testC13))
 RF2 = randomForest(font~., data=trainC2vs13, ntree=bntr, mtry=sqrt(r))
 
 #C3 vs C1+C2:
-trainC12 = rbind(trainCL1n, trainCL2n)
-trainC12$font = 'BITSTREAM/CONSOLAS'
-testC12 = rbind(testCL1n, testCL2n)
-testC12$font = 'BITSTREAM/CONSOLAS'
+trainC12 = rbind(trainCL1n, trainCL2n); trainC12$font = 'BITSTREAM/CONSOLAS'
+testC12 = rbind(testCL1n, testCL2n); testC12$font = 'BITSTREAM/CONSOLAS'
 trainC3vs12 = droplevels(rbind(rbind(trainCL3n, trainCL3n), trainC12))
 testC3vs12 = droplevels(rbind(rbind(testCL3n, testCL3n), testC12))
 RF3 = randomForest(font~., data=trainC3vs12, ntree=bntr, mtry=sqrt(r))
