@@ -75,10 +75,6 @@ rfn = vector(mode = "list", length = length(ntrees)) #test predictions
 accn = NULL #global accuracies
 bitstreamACCn = NULL; consolasACCn = NULL; ebrimaACCn = NULL #diagonals of the conf. matrix
 
-for(n in 1:length(ntrees)){
-  rfn[[i]] = predict(randomForest(font~., data=TRAINSET, ntree=ntrees[i], mtry=sqrt(r)), TESTSET)
-}
-
 for(i in 1:length(ntrees)){
   rfn[[i]] = predict(randomForest(font~., data=TRAINSET, ntree=ntrees[i], mtry=sqrt(r)), TESTSET)
   confn = table(TESTSET$font, rfn[[i]])
@@ -101,7 +97,6 @@ ggplot(ACTREE)+
 
 #diagonals(font acc) vs ntrees
 ggplot(ACTREE)+
-  geom_line(aes(ntrees,accn,color="black"))+
   geom_line(aes(ntrees,bitstreamACCn,color="red"))+
   geom_line(aes(ntrees,consolasACCn,color="blue"))+
   geom_line(aes(ntrees,ebrimaACCn,color="green"))+
