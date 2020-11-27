@@ -123,7 +123,9 @@ ggplot(IMK,aes(LK,IMK))+
 #performance of bestRF on testset
 bestPred = predict(bestRF, TESTSET) 
 bestTestconf = table(TESTSET$font, bestPred)
-bestTestconf/apply(bestTestconf,1,sum)
+bestTestconf = bestTestconf/apply(bestTestconf,1,sum)
+bestacc = sum(diag(bestTestconf))/sum(bestTestconf)#global accuracy
+
 
 #4.2
 #assign new selections ~20% of each class
@@ -131,11 +133,11 @@ set.seed(2);r1n=sort(sample(nrow(CL1n),nrow(CL1n)*0.2))
 set.seed(2);r2n=sort(sample(nrow(CL2n),nrow(CL2n)*0.2))
 set.seed(2);r3n=sort(sample(nrow(CL3n),nrow(CL3n)*0.2))
 #define new test&training sets
-testCL1n=CL1n[r1n,];trainCL1n=CL1n[-r1n,]
-testCL2n=CL2n[r2n,];trainCL2n=CL2n[-r2n,]
-testCL3n=CL3n[r3n,];trainCL3n=CL3n[-r3n,]
-newTRAINSET=rbind(trainCL1n,trainCL2n,trainCL3n)
-newTESTSET=rbind(testCL1n,testCL2n,testCL3n)
+testCL1n_n=CL1n[r1n,];trainCL1n_n=CL1n[-r1n,]
+testCL2n_n=CL2n[r2n,];trainCL2n_n=CL2n[-r2n,]
+testCL3n_n=CL3n[r3n,];trainCL3n_n=CL3n[-r3n,]
+newTRAINSET=rbind(trainCL1n_n,trainCL2n_n,trainCL3n_n)
+newTESTSET=rbind(testCL1n_n,testCL2n_n,testCL3n_n)
 newTRAINSET$font=as.factor(newTRAINSET$font)
 newTESTSET$font=as.factor(newTESTSET$font)
 
@@ -143,45 +145,65 @@ newRF = randomForest(font~., data=newTRAINSET, ntree=bntr, mtry=sqrt(r))
 newPred = predict(newRF, newTESTSET)
 
 #Accuracy & test conf. matrix
-accn_n = NULL #global accuracies
-bitstreamACCn_n = NULL; consolasACCn_n = NULL; ebrimaACCn_n = NULL #diagonals of the conf. matrix
-
 newTestconf = table(newTESTSET$font, newPred)
-accn_n = c(accn_n, sum(diag(newTestconf))/sum(newTestconf))
-percent_n = (newTestconf/apply(newTestconf,1,sum))
-bitstreamACCn_n = c(bitstreamACCn_n, diag(percent)[1])
-consolasACCn_n = c(consolasACCn_n, diag(percent)[2])
-ebrimaACCn_n = c(ebrimaACCn_n, diag(percent)[3])
-newTestconf/apply(newTestconf,1,sum)
-
+accn_n = sum(diag(newTestconf))/sum(newTestconf)
+percent_n = newTestconf/apply(newTestconf,1,sum)
+bitstreamACCn_n = diag(percent_n)[1]
+consolasACCn_n = diag(percent_n)[2]
+ebrimaACCn_n = diag(percent_n)[3]
+newTestconf = newTestconf/apply(newTestconf,1,sum)
 
 #confidence intervals
+#comparing overall accuracies:
+sigmanew = sqrt(accn_n*(1-accn_n)/ nrow(newTESTSET))
+sigmabest = sqrt(bestacc*(1-bestacc)/ nrow(TESTSET))
+#90% conf. intervals:
+intervalnew = c(accn_n-sigmanew*qnorm(1-0.1/2), accn_n+sigmanew*qnorm(1-0.1/2))
+intervalbest = c(bestacc-sigmabest*qnorm(1-0.1/2), bestacc+sigmabest*qnorm(1-0.1/2))
+#there is significant overlap between these 2 intervals -> evidence that accuracy for both 
+#bestRF and newRF should be similar, which they are (0.824 vs 0.831)
+
+#comparing confusion matrices (accuracy for each class):
+#newRF:
+p = diag(newTestconf)
+sigmaCL1new=sqrt(p[1]*(1-p[1])/nrow(testCL1n_n))
+sigmaCL2new=sqrt(p[2]*(1-p[2])/nrow(testCL2n_n))
+sigmaCL3new=sqrt(p[3]*(1-p[3])/nrow(testCL3n_n))
+#90% confidence interval
+intervalCL1new=c(p[1]-sigmaCL1new*qnorm(1-0.1/2), p[1]+sigmaCL1new*qnorm(1-0.1/2))
+intervalCL2new=c(p[2]-sigmaCL2new*qnorm(1-0.1/2), p[2]+sigmaCL2new*qnorm(1-0.1/2))
+intervalCL3new=c(p[3]-sigmaCL3new*qnorm(1-0.1/2), p[3]+sigmaCL3new*qnorm(1-0.1/2))
+
+#bestRF:
+p2 = diag(bestTestconf)
+sigmaCL1best=sqrt(p2[1]*(1-p2[1])/nrow(testCL1n))
+sigmaCL2best=sqrt(p2[2]*(1-p2[2])/nrow(testCL2n))
+sigmaCL3best=sqrt(p2[3]*(1-p2[3])/nrow(testCL3n))
+#90% confidence interval
+intervalCL1best=c(p2[1]-sigmaCL1best*qnorm(1-0.1/2), p2[1]+sigmaCL1best*qnorm(1-0.1/2))
+intervalCL2best=c(p2[2]-sigmaCL2best*qnorm(1-0.1/2), p2[2]+sigmaCL2best*qnorm(1-0.1/2))
+intervalCL3best=c(p2[3]-sigmaCL3best*qnorm(1-0.1/2), p2[3]+sigmaCL3best*qnorm(1-0.1/2))
+#similar conclusion when comparing by each font acc 
 
 #5.1
 #clone the single class, rename the combined classes' classifiers
 #C1 vs C2+C3:
-trainC23 = rbind(trainCL2n, trainCL3n)
-trainC23$font = 'CONSOLAS/EBRIMA'
-testC23 = rbind(testCL2n, testCL3n)
-testC23$font = 'CONSOLAS/EBRIMA'
+trainC23 = rbind(trainCL2n, trainCL3n); trainC23$font = 'CONSOLAS/EBRIMA'
+testC23 = rbind(testCL2n, testCL3n); testC23$font = 'CONSOLAS/EBRIMA'
 trainC1vs23 = droplevels(rbind(rbind(trainCL1n, trainCL1n), trainC23))
 testC1vs23 = droplevels(rbind(rbind(testCL1n, testCL1n), testC23))
 RF1 = randomForest(font~., data=trainC1vs23, ntree=bntr, mtry=sqrt(r))
 
 #C2 vs C1+C3:
-trainC13 = rbind(trainCL1n, trainCL3n)
-trainC13$font = 'BITSTREAM/EBRIMA'
-testC13 = rbind(testCL1n, testCL3n)
-testC13$font = 'BITSTREAM/EBRIMA'
+trainC13 = rbind(trainCL1n, trainCL3n); trainC13$font = 'BITSTREAM/EBRIMA'
+testC13 = rbind(testCL1n, testCL3n); testC13$font = 'BITSTREAM/EBRIMA'
 trainC2vs13 = droplevels(rbind(rbind(trainCL2n, trainCL2n), trainC13))
 testC2vs13 = droplevels(rbind(rbind(testCL2n, testCL2n), testC13))
 RF2 = randomForest(font~., data=trainC2vs13, ntree=bntr, mtry=sqrt(r))
 
 #C3 vs C1+C2:
-trainC12 = rbind(trainCL1n, trainCL2n)
-trainC12$font = 'BITSTREAM/CONSOLAS'
-testC12 = rbind(testCL1n, testCL2n)
-testC12$font = 'BITSTREAM/CONSOLAS'
+trainC12 = rbind(trainCL1n, trainCL2n); trainC12$font = 'BITSTREAM/CONSOLAS'
+testC12 = rbind(testCL1n, testCL2n); testC12$font = 'BITSTREAM/CONSOLAS'
 trainC3vs12 = droplevels(rbind(rbind(trainCL3n, trainCL3n), trainC12))
 testC3vs12 = droplevels(rbind(rbind(testCL3n, testCL3n), testC12))
 RF3 = randomForest(font~., data=trainC3vs12, ntree=bntr, mtry=sqrt(r))
