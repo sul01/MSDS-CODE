@@ -49,9 +49,10 @@ CL2n=subset(newDATA,newDATA[,1]=='CONSOLAS')
 CL3n=subset(newDATA,newDATA[,1]=='EBRIMA') 
 
 #assign selections ~20% of each class
-set.seed(1);r1n=sort(sample(nrow(CL1n),nrow(CL1n)*0.2))
-set.seed(1);r2n=sort(sample(nrow(CL2n),nrow(CL2n)*0.2))
-set.seed(1);r3n=sort(sample(nrow(CL3n),nrow(CL3n)*0.2))
+n=1
+set.seed(n);r1n=sort(sample(nrow(CL1n),nrow(CL1n)*0.2))
+set.seed(n);r2n=sort(sample(nrow(CL2n),nrow(CL2n)*0.2))
+set.seed(n);r3n=sort(sample(nrow(CL3n),nrow(CL3n)*0.2))
 #define test&training sets
 testCL1n=CL1n[r1n,];trainCL1n=CL1n[-r1n,]
 testCL2n=CL2n[r2n,];trainCL2n=CL2n[-r2n,]
@@ -85,8 +86,9 @@ for(i in 1:length(ntrees)){
   ebrimaACCn = c(ebrimaACCn, diag(percent)[3])
 }
 
-#print(sprintf("conf%i (n=%i):", i, ntrees[i]))
-#print(percent)#display all matrices
+  #print(sprintf("conf%i (n=%i):", i, ntrees[i]))
+  #print(percent)#display all matrices
+
 
 #accuracy  vs ntrees
 ACTREE=as.data.frame(cbind(ntrees,accn,bitstreamACCn,consolasACCn,ebrimaACCn))
@@ -187,6 +189,8 @@ trainC23 = rbind(trainCL2n, trainCL3n); trainC23$font = 'CONSOLAS/EBRIMA'
 testC23 = rbind(testCL2n, testCL3n); testC23$font = 'CONSOLAS/EBRIMA'
 trainC1vs23 = droplevels(rbind(rbind(trainCL1n, trainCL1n), trainC23))
 testC1vs23 = droplevels(rbind(rbind(testCL1n, testCL1n), testC23))
+trainC1vs23$font=as.factor(trainC1vs23$font)
+testC1vs23$font=as.factor(testC1vs23$font)
 RF1 = randomForest(font~., data=trainC1vs23, ntree=bntr, mtry=sqrt(r))
 
 #C2 vs C1+C3:
@@ -194,6 +198,8 @@ trainC13 = rbind(trainCL1n, trainCL3n); trainC13$font = 'BITSTREAM/EBRIMA'
 testC13 = rbind(testCL1n, testCL3n); testC13$font = 'BITSTREAM/EBRIMA'
 trainC2vs13 = droplevels(rbind(rbind(trainCL2n, trainCL2n), trainC13))
 testC2vs13 = droplevels(rbind(rbind(testCL2n, testCL2n), testC13))
+trainC2vs13$font=as.factor(trainC2vs13$font)
+testC2vs13$font=as.factor(testC2vs13$font)
 RF2 = randomForest(font~., data=trainC2vs13, ntree=bntr, mtry=sqrt(r))
 
 #C3 vs C1+C2:
@@ -201,6 +207,8 @@ trainC12 = rbind(trainCL1n, trainCL2n); trainC12$font = 'BITSTREAM/CONSOLAS'
 testC12 = rbind(testCL1n, testCL2n); testC12$font = 'BITSTREAM/CONSOLAS'
 trainC3vs12 = droplevels(rbind(rbind(trainCL3n, trainCL3n), trainC12))
 testC3vs12 = droplevels(rbind(rbind(testCL3n, testCL3n), testC12))
+trainC3vs12$font=as.factor(trainC3vs12$font)
+testC3vs12$font=as.factor(testC3vs12$font)
 RF3 = randomForest(font~., data=trainC3vs12, ntree=bntr, mtry=sqrt(r))
 
 #confusion matrix of test results
@@ -226,12 +234,12 @@ colnames(pred1best) = rownames(pred1best)
 
 #C2 vs C1+C3
 pred2best = table(testC2vs13$font, predict(bestRF, testC2vs13))
-pred2best = cbind(pred2best[,2], pred2best[,1]+pred2best[,3])
+pred2best = cbind(pred2best[,1]+pred2best[,3],pred2best[,2])
 colnames(pred2best) = rownames(pred2best)
 
 #C3 vs C1+C2
 pred3best = table(testC3vs12$font, predict(bestRF, testC3vs12))
-pred3best = cbind(pred3best[,3], pred3best[,1]+pred3best[,2])
+pred3best = cbind(pred3best[,1]+pred3best[,2],pred3best[,3])
 colnames(pred3best) = rownames(pred3best)
 
 #global accuracies on test sets
