@@ -1,0 +1,8 @@
+#CL1 and CL3
+pair = rbind(CL1new,CL3new)
+pair$Font = droplevels(pair$Font)
+cols = c('red', 'blue')
+pca3 = pair[,2:4] #first 3 principal comps.
+scatterplot3d(pca3, xlab='V1', ylab='V2', zlab='V3',
+              pch=20, color = cols[as.numeric(pair$Font)])
+legend('topright', legend = levels(pair$Font), col = cols, pch=20)
